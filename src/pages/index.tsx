@@ -1,8 +1,12 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 import { GetStaticProps } from 'next';
+import { FiCalendar, FiUser } from 'react-icons/fi';
 
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
+import Router from 'next/router';
 import { getPrismicClient } from '../services/prismic';
 
-import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
 
 interface Post {
@@ -24,10 +28,44 @@ interface HomeProps {
   postsPagination: PostPagination;
 }
 
-export default function Home() {
+export default function Home({ postsPagination }: HomeProps) {
+  function formatDate(date: string): string {
+    return format(new Date(date), 'dd MMM yyyy', {
+      locale: ptBR,
+    });
+  }
+
+  function handlePostClick(uid: string): void {
+    console.log(uid);
+    Router.push(`/posts/${uid}`);
+  }
+
   return (
-    <main>
-      <h1> Inicio </h1>
+    <main className={styles.home}>
+      <img className={styles.logo} src="Logo.png" alt="" />
+      <div className={styles.postsContainer}>
+        {postsPagination.results.map(post => (
+          // eslint-disable-next-line jsx-a11y/click-events-have-key-events
+          <div
+            key={post.uid}
+            className={styles.postItem}
+            onClick={() => handlePostClick(post.uid)}
+          >
+            <h1>{post.data.title}</h1>
+            <p>{post.data.subtitle}</p>
+            <div className={styles.metadata}>
+              <div className={styles.content}>
+                <FiCalendar />
+                <span>{formatDate(post.first_publication_date)}</span>
+              </div>
+              <div className={styles.content}>
+                <FiUser />
+                <span>{post.data.author}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </main>
   );
   // TODO
